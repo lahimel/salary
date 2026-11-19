@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salary Deduction Calculator</title>
+<style>
+:root{
+  --bg:#f4f7fa; --card:#fff; --ink:#14213d; --muted:#5b6b7f; --line:#e3e9f0;
+  --brand:#0f766e; --brand-d:#0b5a54; --brand-l:#e6f4f2; --accent:#d97706;
+  --bad:#b42318; --bad-l:#fdecea; --ok:#067647; --ok-l:#e7f6ee;
+  --c-net:#0f766e; --c-ee:#4338ca; --c-pt:#d97706; --c-tds:#be123c; --c-er:#0369a1; --c-med:#64748b;
+  --r:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI","Noto Sans","Noto Sans Devanagari","Nirmala UI","Mangal","Kohinoor Devanagari",system-ui,-apple-system,sans-serif;
+  line-height:1.55;font-size:16px}
+a{color:var(--brand-d)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+
+/* top bar */
+.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700}
+.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#14b8a6);color:#fff;display:grid;place-items:center;font-size:18px}
+.lang{display:flex;align-items:center;gap:8px}
+.lang span{font-size:13px;color:var(--muted)}
+.seg{display:inline-flex;background:#eef2f6;border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 14px;border-radius:999px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--brand);color:#fff;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.seg button:focus-visible,.chip:focus-visible,.btn:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid #99d5cf;outline-offset:2px}
+
+/* hero */
+.hero{background:linear-gradient(135deg,#0b5a54 0%,#0f766e 55%,#14b8a6 100%);color:#fff;padding:34px 0 64px}
+.tag{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);padding:4px 12px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:12px}
+.hero h1{margin:0 0 8px;font-size:clamp(26px,4vw,38px);line-height:1.2}
+.hero p{margin:0;max-width:720px;font-size:17px;opacity:.95}
+
+nav.tabs{margin-top:-30px}
+nav.tabs .wrap{display:flex;gap:8px;flex-wrap:wrap}
+nav.tabs a{background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 16px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:600;box-shadow:0 2px 6px rgba(20,33,61,.06)}
+nav.tabs a:hover{background:var(--brand-l)}
+
+/* layout */
+main{padding:22px 0 40px}
+.grid{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:20px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.grid>*,.stack>*{min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:0 2px 10px rgba(20,33,61,.04)}
+.card h2{margin:0 0 12px;font-size:19px}
+.card h3{margin:0 0 6px;font-size:16px}
+.inputs{position:sticky;top:76px}
+@media(max-width:900px){.inputs{position:static}}
+.stack{display:grid;gap:18px}
+
+/* form */
+.field{margin-bottom:14px}
+.field label,.lbl{display:block;font-weight:600;font-size:14px;margin-bottom:5px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:4px}
+.money{display:flex;align-items:center;border:1.5px solid #c9d3df;border-radius:12px;background:#fff;overflow:hidden}
+.money:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px #bfe6e1}
+.money b{padding:0 6px 0 14px;color:var(--muted);font-weight:600}
+.money input{flex:1;border:0;outline:0;font:inherit;font-size:18px;font-weight:600;padding:11px 12px 11px 2px;min-width:0;background:transparent;color:var(--ink)}
+.field.main .money input{font-size:22px}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.modes button{border:1.5px solid #c9d3df;background:#fff;border-radius:10px;padding:8px 6px;font:inherit;font-size:13px;cursor:pointer;line-height:1.25;color:var(--ink)}
+.modes button[aria-pressed="true"]{border-color:var(--brand);background:var(--brand-l);font-weight:700;color:var(--brand-d)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 14px}
+.chip{border:1px solid #c9d3df;background:#f8fafc;border-radius:999px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.chip:hover{background:var(--brand-l);border-color:var(--brand)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.btn{border:1.5px solid #c9d3df;background:#fff;border-radius:10px;padding:8px 14px;font:inherit;font-size:14px;cursor:pointer}
+.btn:hover{background:#f1f5f9}
+hr.sep{border:0;border-top:1px dashed var(--line);margin:14px 0}
+
+/* net card */
+.net{background:linear-gradient(135deg,#0b5a54,#0f766e);color:#fff;border:0}
+.net .lab{font-size:14px;opacity:.9}
+.net .amt{font-size:clamp(34px,6vw,50px);font-weight:800;line-height:1.15;margin:4px 0}
+.net .sub{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;opacity:.95}
+.net .pct{margin-top:10px;background:rgba(255,255,255,.15);display:inline-block;padding:4px 12px;border-radius:999px;font-size:13px}
+
+/* split bar */
+.bar{display:flex;height:22px;border-radius:999px;overflow:hidden;background:#eef2f6;margin:6px 0 14px}
+.bar i{display:block;height:100%;min-width:0;transition:width .35s ease}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 16px;font-size:14px}
+.legend div{display:flex;align-items:center;gap:8px}
+.legend s{width:12px;height:12px;border-radius:4px;display:inline-block;flex:none;text-decoration:none}
+.legend span{flex:1}
+.legend em{font-style:normal;font-weight:700;font-variant-numeric:tabular-nums}
+.legend small{color:var(--muted);margin-left:4px}
+
+/* tables */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{background:#f1f5f9;text-align:left;padding:9px 10px;font-size:13px;color:var(--muted);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.f{color:var(--muted);font-size:13px}
+tr.total td{background:#f7fafc;font-weight:700}
+tr.hl td{background:var(--brand-l);font-weight:800;color:var(--brand-d)}
+td.neg{color:var(--bad);font-weight:700}
+.up{color:var(--bad)} .down{color:var(--ok)}
+
+/* notices */
+.note{border-radius:12px;padding:10px 14px;font-size:14px;margin-top:12px}
+.note.info{background:#eef6ff;border:1px solid #cfe3fb}
+.note.warn{background:var(--bad-l);border:1px solid #f4b8b1;color:#7a1b12;font-weight:600}
+.note[hidden]{display:none}
+
+/* steps */
+details.steps{border:1px solid var(--line);border-radius:12px;padding:0 14px;background:#fbfcfe}
+details summary{cursor:pointer;font-weight:700;padding:12px 0;list-style-position:inside}
+details[open] summary{border-bottom:1px solid var(--line);margin-bottom:8px}
+ol.st{margin:0;padding:0 0 12px 0;list-style:none;display:grid;gap:8px}
+ol.st li{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+ol.st code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;color:var(--brand-d);background:var(--brand-l);padding:2px 8px;border-radius:6px;white-space:nowrap}
+
+/* learn */
+section.block{margin-top:34px}
+section.block>h2{font-size:clamp(22px,3vw,28px);margin:0 0 14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.cards .card p{margin:0;font-size:15px;color:#2b3a52}
+.ico{width:38px;height:38px;border-radius:10px;background:var(--brand-l);display:grid;place-items:center;font-size:20px;margin-bottom:10px}
+.big{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:6px 0 4px}
+@media(max-width:560px){.big{grid-template-columns:1fr}}
+.stat{background:#f7fafc;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat small{color:var(--muted);display:block;font-size:12.5px}
+.stat b{font-size:16px;white-space:nowrap}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:0 16px}
+.faq details summary{padding:14px 0}
+.faq details p{margin:0 0 14px;color:#2b3a52;font-size:15px}
+.src{font-size:13px;color:var(--muted)}
+footer{border-top:1px solid var(--line);background:#fff;padding:22px 0;font-size:13.5px;color:var(--muted)}
+footer p{margin:0 0 8px}
+
+@media print{
+  .top,nav.tabs,.inputs .btnrow,.chips,.modes,#learn,#faq,.hero p{display:none!important}
+  .hero{background:none;color:#000;padding:0}
+  .grid{grid-template-columns:1fr}
+  .net{background:#fff;color:#000;border:1px solid #999}
+  .inputs{position:static}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><div class="logo" aria-hidden="true">₹</div><span data-i18n="brand">Salary Calculator</span></div>
+    <div class="lang" role="group" aria-label="Language">
+      <span data-i18n="langLabel">Language</span>
+      <div class="seg">
+        <button type="button" data-lang="en" aria-pressed="true">English</button>
+        <button type="button" data-lang="hi" aria-pressed="false">हिन्दी</button>
+        <button type="button" data-lang="mr" aria-pressed="false">मराठी</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="tag" data-i18n="heroTag">Effective 17 September 2026</span>
+    <h1 data-i18n="heroTitle">Salary Deduction Calculator</h1>
+    <p data-i18n="heroSub">Enter your salary and instantly see your PF, deductions and take-home pay under the new ₹25,000 PF wage ceiling.</p>
+  </div>
+</section>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="wrap">
+    <a href="#calc" data-i18n="navCalc">Calculator</a>
+    <a href="#learn" data-i18n="navLearn">Understand the changes</a>
+    <a href="#faq" data-i18n="navFaq">FAQ</a>
+  </div>
+</nav>
+
+<main class="wrap">
+  <section id="calc" class="grid">
+
+    <!-- INPUTS -->
+    <div class="card inputs">
+      <h2 data-i18n="inputsTitle">Your salary details</h2>
+
+      <div class="lbl" id="enterByLbl" data-i18n="enterBy">I know my…</div>
+      <div class="modes" role="group" aria-labelledby="enterByLbl">
+        <button type="button" data-mode="monthly" aria-pressed="true" data-i18n="modeMonthly">Monthly CTC</button>
+        <button type="button" data-mode="annual" aria-pressed="false" data-i18n="modeAnnual">Annual CTC</button>
+        <button type="button" data-mode="basic" aria-pressed="false" data-i18n="modeBasic">Basic salary</button>
+      </div>
+
+      <div class="field main">
+        <label for="mainIn" id="mainLbl">Monthly CTC (₹)</label>
+        <div class="money"><b>₹</b><input id="mainIn" type="text" inputmode="decimal" autocomplete="off"></div>
+        <div class="hint" id="mainHint"></div>
+      </div>
+
+      <div class="lbl" data-i18n="quick">Try an example</div>
+      <div class="chips" id="chips"></div>
+
+      <hr class="sep">
+
+      <div class="field">
+        <label for="medIn" data-i18n="medLbl">Mediclaim premium (₹ / month)</label>
+        <div class="money"><b>₹</b><input id="medIn" type="text" inputmode="decimal" autocomplete="off"></div>
+        <div class="hint" data-i18n="medHint">Average premium, paid by the employer and included in CTC.</div>
+      </div>
+      <div class="field">
+        <label for="ptIn" data-i18n="ptLbl">Professional tax (₹ / month)</label>
+        <div class="money"><b>₹</b><input id="ptIn" type="text" inputmode="decimal" autocomplete="off"></div>
+        <div class="hint" data-i18n="ptHint">Varies by state; ₹200 as per the sheet.</div>
+      </div>
+      <div class="field">
+        <label for="tdsIn" data-i18n="tdsLbl">TDS, if applicable (₹ / month)</label>
+        <div class="money"><b>₹</b><input id="tdsIn" type="text" inputmode="decimal" autocomplete="off"></div>
+        <div class="hint" data-i18n="tdsHint">Income tax deducted at source. Enter 0 if none.</div>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn" type="button" id="resetBtn" data-i18n="reset">Reset</button>
+        <button class="btn" type="button" id="printBtn" data-i18n="print">Print / Save PDF</button>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="stack">
+      <div class="card net" aria-live="polite">
+        <div class="lab" data-i18n="netTitle">Your monthly take-home</div>
+        <div class="amt" id="netAmt">—</div>
+        <div class="sub"><span id="netYear"></span><span id="netCtc"></span></div>
+        <span class="pct" id="netPct"></span>
+      </div>
+
+      <div class="card" id="warnCard" hidden>
+        <div class="note warn" id="warnMsg"></div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="splitTitle">Where does your CTC go?</h2>
+        <div class="bar" id="bar" role="img" aria-label=""></div>
+        <div class="legend" id="legend"></div>
+        <div class="note info" id="pfNote"></div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="breakupTitle">Salary break-up (monthly)</h2>
+        <div class="tw"><table>
+          <thead><tr><th data-i18n="colComp">Component</th><th class="n" data-i18n="colAmt">Amount (₹)</th><th data-i18n="colHow">How it is calculated</th></tr></thead>
+          <tbody id="tbBreak"></tbody>
+        </table></div>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="dedTitle">Deductions from your salary</h2>
+        <div class="tw"><table>
+          <thead><tr><th data-i18n="colComp">Component</th><th class="n" data-i18n="colAmt">Amount (₹)</th><th data-i18n="colHow">How it is calculated</th></tr></thead>
+          <tbody id="tbDed"></tbody>
+        </table></div>
+      </div>
+
+      <div class="card">
+        <details class="steps">
+          <summary data-i18n="stepsTitle">See the working step by step</summary>
+          <ol class="st" id="steps"></ol>
+        </details>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="cmpTitle">What changed on 17 September 2026?</h2>
+        <p style="margin:0 0 10px;color:var(--muted);font-size:14.5px" data-i18n="cmpSub">Same CTC, two PF ceilings — with your numbers:</p>
+        <div class="tw"><table>
+          <thead><tr><th></th><th class="n" data-i18n="cmpOld">Old ceiling ₹15,000</th><th class="n" data-i18n="cmpNew">New ceiling ₹25,000</th><th class="n" data-i18n="cmpDiff">Difference</th></tr></thead>
+          <tbody id="tbCmp"></tbody>
+        </table></div>
+        <div class="note info" data-i18n="cmpNote"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPLAINER -->
+  <section id="learn" class="block">
+    <h2 data-i18n="learnTitle">Understanding the new rules</h2>
+    <div class="cards">
+      <div class="card"><div class="ico">📢</div><h3 data-i18n="c1t"></h3><p data-i18n="c1p"></p>
+        <div class="big"><div class="stat"><small data-i18n="statOld">Earlier ceiling</small><b>₹15,000</b></div><div class="stat"><small data-i18n="statNew">New ceiling</small><b>₹25,000</b></div></div></div>
+      <div class="card"><div class="ico">💰</div><h3 data-i18n="c2t"></h3><p data-i18n="c2p"></p>
+        <div class="big"><div class="stat"><small data-i18n="statEe">Max. your PF / month</small><b>₹1,800 → ₹3,000</b></div><div class="stat"><small data-i18n="statEr">Max. employer PF / month</small><b>₹1,950 → ₹3,250</b></div></div></div>
+      <div class="card"><div class="ico">⚖️</div><h3 data-i18n="c3t"></h3><p data-i18n="c3p"></p></div>
+      <div class="card"><div class="ico">📉</div><h3 data-i18n="c4t"></h3><p data-i18n="c4p"></p></div>
+    </div>
+
+    <h2 style="margin-top:28px;font-size:22px" data-i18n="glossTitle">What each item means</h2>
+    <div class="cards">
+      <div class="card"><h3 data-i18n="g1t"></h3><p data-i18n="g1p"></p></div>
+      <div class="card"><h3 data-i18n="g2t"></h3><p data-i18n="g2p"></p></div>
+      <div class="card"><h3 data-i18n="g3t"></h3><p data-i18n="g3p"></p></div>
+      <div class="card"><h3 data-i18n="g4t"></h3><p data-i18n="g4p"></p></div>
+    </div>
+  </section>
+
+  <section id="faq" class="block faq">
+    <h2 data-i18n="faqTitle">Frequently asked questions</h2>
+    <details><summary data-i18n="q1"></summary><p data-i18n="a1"></p></details>
+    <details><summary data-i18n="q2"></summary><p data-i18n="a2"></p></details>
+    <details><summary data-i18n="q3"></summary><p data-i18n="a3"></p></details>
+    <details><summary data-i18n="q4"></summary><p data-i18n="a4"></p></details>
+    <details><summary data-i18n="q5"></summary><p data-i18n="a5"></p></details>
+    <details><summary data-i18n="q6"></summary><p data-i18n="a6"></p></details>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p data-i18n="disclaimer"></p>
+    <p class="src"><span data-i18n="sources">Sources</span>:
+      <a href="https://www.bdo.in/en-gb/insights/alerts-updates/alert-new-epf-ceiling-hiked" target="_blank" rel="noopener">BDO India – New EPF ceiling</a> ·
+      <a href="https://www.sgcms.com/regulatory-updates/faqs-by-epfo-wage-ceiling-raised-to-25000/" target="_blank" rel="noopener">EPFO FAQs – wage ceiling ₹25,000</a> ·
+      <a href="https://www.india-briefing.com/news/salary-structure-india-labor-code-compliance-guide-44332.html" target="_blank" rel="noopener">India Briefing – Labour Code salary structure</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+"use strict";
+/* ============ TRANSLATIONS ============ */
+const T = {
+en:{
+ brand:"Salary Calculator", langLabel:"Language", heroTag:"Effective 17 September 2026",
+ heroTitle:"Salary Deduction Calculator",
+ heroSub:"Enter your salary and instantly see your PF, deductions and take-home pay under the new ₹25,000 PF wage ceiling.",
+ navCalc:"Calculator", navLearn:"Understand the changes", navFaq:"FAQ",
+ inputsTitle:"Your salary details", enterBy:"I know my…",
+ modeMonthly:"Monthly CTC", modeAnnual:"Annual CTC", modeBasic:"Basic salary",
+ lblMonthly:"Monthly CTC (₹)", lblAnnual:"Annual CTC (₹)", lblBasic:"Basic salary per month (₹)",
+ hintMonthly:"Total cost to company per month, including employer PF and mediclaim.",
+ hintAnnual:"Total yearly package. We divide by 12 to get the monthly CTC.",
+ hintBasic:"We work backwards: Basic is 55% of CTC, so CTC = Basic ÷ 55%.",
+ quick:"Try an example",
+ medLbl:"Mediclaim premium (₹ / month)", medHint:"Average premium, paid by the employer and included in CTC.",
+ ptLbl:"Professional tax (₹ / month)", ptHint:"Varies by state; ₹200 as per the sheet.",
+ tdsLbl:"TDS, if applicable (₹ / month)", tdsHint:"Income tax deducted at source. Enter 0 if none.",
+ reset:"Reset", print:"Print / Save PDF",
+ netTitle:"Your monthly take-home", perYear:"per year", ctcIs:"Monthly CTC",
+ pctOfCtc:"{p}% of your CTC reaches your bank account",
+ splitTitle:"Where does your CTC go?",
+ lgNet:"Take-home pay", lgEe:"Your PF", lgPt:"Professional tax", lgTds:"TDS", lgEr:"Employer's PF", lgMed:"Mediclaim",
+ pfBelow:"Your basic (₹{b}) is below the ₹25,000 ceiling, so PF is 13% (employer) and 12% (you) of your actual basic.",
+ pfAbove:"Your basic (₹{b}) is ₹25,000 or more, so PF is capped at the ceiling: ₹3,250 from the employer and ₹3,000 from you.",
+ warnNeg:"This CTC is too low for the structure — Field Allowance is coming out negative. Please increase the CTC.",
+ breakupTitle:"Salary break-up (monthly)", dedTitle:"Deductions from your salary",
+ colComp:"Component", colAmt:"Amount (₹)", colHow:"How it is calculated",
+ rA:"Basic (a)", rB:"HRA – House Rent Allowance (b)", rC:"Field Allowance (c)", rD:"Gross salary (d = a + b + c)",
+ rE:"Employer PF contribution (e)", rF:"Mediclaim premium (f)", rG:"Monthly CTC (g = d + e + f)", rH:"Annual CTC (g × 12)",
+ rI:"Employee PF contribution (i)", rJ:"Professional tax (j)", rK:"TDS (k)", rL:"Total deductions (l = i + j + k)", rM:"Monthly net pay (m = d − l)",
+ fA:"55% of Monthly CTC (g)", fB:"50% of Basic (a)", fC:"c = d − (a + b), the balancing figure", fD:"d = g − e − f",
+ fE:"13% of Basic (a), capped at ₹3,250 (13% of ₹25,000)", fF:"Fixed monthly amount, as per age (average)", fG:"The CTC you entered", fH:"g × 12",
+ fI:"12% of Basic (a), capped at ₹3,000 (12% of ₹25,000)", fJ:"Entered by you (₹200 as per the sheet)", fK:"Entered by you (0 if not applicable)", fL:"l = i + j + k", fM:"m = d − l",
+ stepsTitle:"See the working step by step",
+ capped:"capped",
+ cmpTitle:"What changed on 17 September 2026?", cmpSub:"Same CTC, two PF ceilings — with your numbers:",
+ cmpOld:"Old ceiling ₹15,000", cmpNew:"New ceiling ₹25,000", cmpDiff:"Difference",
+ cmpEe:"Your PF (12%)", cmpEr:"Employer's PF (13%)", cmpTot:"Total going into your PF account", cmpNet:"Monthly net pay (take-home)",
+ cmpNote:"Illustration assuming your CTC stays the same. Because employer PF is paid out of CTC, a higher PF means a lower gross and take-home now — but the difference is saved in your PF account for retirement.",
+ learnTitle:"Understanding the new rules",
+ c1t:"What changed?", c1p:"The Government of India has raised the wage ceiling for Provident Fund (PF) from ₹15,000 to ₹25,000 per month. The notification (S.O. 5109(E)) took effect on 17 September 2026 — the first revision in about 12 years. PF is now calculated on basic salary up to ₹25,000.",
+ statOld:"Earlier ceiling", statNew:"New ceiling",
+ c2t:"What does this mean in rupees?", c2p:"The maximum employee PF rises from ₹1,800 to ₹3,000 a month (12% of ₹25,000), and the maximum employer PF from ₹1,950 to ₹3,250 (13% of ₹25,000). If your basic is ₹25,000 or more, you now reach these maximums.",
+ statEe:"Max. your PF / month", statEr:"Max. employer PF / month",
+ c3t:"The 50% wage rule", c3p:"Under the four Labour Codes (in force since 21 November 2025), basic pay plus dearness allowance should be at least 50% of total remuneration. That is why this structure keeps Basic at 55% of CTC, which is above the minimum.",
+ c4t:"Why does take-home fall?", c4p:"Your employer's PF is part of CTC. When the PF base rises, more of the CTC goes into PF and less is left in Gross salary (so Field Allowance shrinks). Nothing is lost: the money moves to your PF account, which you receive with interest at retirement or when you leave, subject to PF rules.",
+ glossTitle:"What each item means",
+ g1t:"Provident Fund (PF)", g1p:"A retirement savings scheme. You pay 12% of basic (maximum ₹3,000) and, in this structure, your employer adds 13% (maximum ₹3,250). Both amounts go into your PF account.",
+ g2t:"Professional Tax", g2p:"A small state tax on salaried people. The amount depends on your state; the sheet assumes ₹200 per month.",
+ g3t:"TDS", g3p:"Tax Deducted at Source — income tax your employer deducts if your annual taxable income crosses the tax-free limit. It depends on your tax regime and declarations, so enter the amount from your payslip.",
+ g4t:"Mediclaim", g4p:"Group health insurance premium paid by the employer. It is part of CTC but is not paid to you in cash.",
+ faqTitle:"Frequently asked questions",
+ q1:"Is PF now compulsory for me?", a1:"PF coverage is mandatory for eligible employees whose PF wages are up to ₹25,000 per month. People earning between ₹15,000 and ₹25,000 who were earlier outside mandatory coverage may now be covered. Check with your HR for your exact status.",
+ q2:"What if my basic is above ₹25,000?", a2:"PF is capped: ₹3,000 from you and ₹3,250 from your employer. This calculator applies the cap automatically.",
+ q3:"How was September 2026 handled?", a3:"Many payroll providers split the month: ₹15,000 ceiling for 1–16 September and ₹25,000 for 17–30 September. Your September payslip may therefore differ from this calculator; from October the ₹25,000 ceiling applies for the full month.",
+ q4:"Why does Field Allowance change?", a4:"Field Allowance is the balancing figure: Gross − (Basic + HRA). When employer PF goes up, this balancing figure goes down.",
+ q5:"Will my income tax change?", a5:"Possibly. Employee PF may be eligible for deduction under the old tax regime, while the new regime offers limited deductions. Discuss with your finance/HR team or a tax advisor.",
+ q6:"Is this my exact payslip?", a6:"No — it is an estimate based on the Sep'26 salary break-up sheet. Real payslips can differ because of rounding, state professional-tax slabs, TDS and your personal mediclaim premium.",
+ disclaimer:"This calculator is for information only and is not legal or tax advice. Please confirm final figures with your HR / payroll team.",
+ sources:"Sources", docTitle:"Salary Deduction Calculator"
+},
+hi:{
+ brand:"वेतन कैलकुलेटर", langLabel:"भाषा", heroTag:"17 सितंबर 2026 से लागू",
+ heroTitle:"वेतन कटौती कैलकुलेटर",
+ heroSub:"अपना वेतन दर्ज करें और नई ₹25,000 की पीएफ वेतन सीमा के तहत अपना पीएफ, कटौतियाँ और हाथ में आने वाला वेतन तुरंत देखें।",
+ navCalc:"कैलकुलेटर", navLearn:"नए नियम समझें", navFaq:"अक्सर पूछे जाने वाले प्रश्न",
+ inputsTitle:"आपके वेतन का विवरण", enterBy:"मुझे पता है मेरा…",
+ modeMonthly:"मासिक सीटीसी", modeAnnual:"वार्षिक सीटीसी", modeBasic:"मूल वेतन (बेसिक)",
+ lblMonthly:"मासिक सीटीसी (₹)", lblAnnual:"वार्षिक सीटीसी (₹)", lblBasic:"मासिक मूल वेतन – बेसिक (₹)",
+ hintMonthly:"कंपनी पर प्रति माह कुल लागत, जिसमें नियोक्ता का पीएफ और मेडिक्लेम शामिल है।",
+ hintAnnual:"पूरे वर्ष का पैकेज। मासिक सीटीसी के लिए इसे 12 से भाग दिया जाता है।",
+ hintBasic:"हम उल्टा हिसाब लगाते हैं: बेसिक सीटीसी का 55% है, इसलिए सीटीसी = बेसिक ÷ 55%।",
+ quick:"उदाहरण आज़माएँ",
+ medLbl:"मेडिक्लेम प्रीमियम (₹ / माह)", medHint:"औसत प्रीमियम, जो नियोक्ता भरता है और सीटीसी में शामिल है।",
+ ptLbl:"व्यवसाय कर (₹ / माह)", ptHint:"राज्य के अनुसार अलग; शीट में ₹200 माना गया है।",
+ tdsLbl:"टीडीएस, यदि लागू हो (₹ / माह)", tdsHint:"स्रोत पर काटा गया आयकर। न हो तो 0 लिखें।",
+ reset:"रीसेट करें", print:"प्रिंट / PDF सहेजें",
+ netTitle:"आपका मासिक हाथ में आने वाला वेतन", perYear:"प्रति वर्ष", ctcIs:"मासिक सीटीसी",
+ pctOfCtc:"आपकी सीटीसी का {p}% आपके बैंक खाते में पहुँचता है",
+ splitTitle:"आपकी सीटीसी कहाँ जाती है?",
+ lgNet:"हाथ में आने वाला वेतन", lgEe:"आपका पीएफ", lgPt:"व्यवसाय कर", lgTds:"टीडीएस", lgEr:"नियोक्ता का पीएफ", lgMed:"मेडिक्लेम",
+ pfBelow:"आपका बेसिक (₹{b}) ₹25,000 की सीमा से कम है, इसलिए पीएफ आपके वास्तविक बेसिक का 13% (नियोक्ता) और 12% (आप) है।",
+ pfAbove:"आपका बेसिक (₹{b}) ₹25,000 या उससे अधिक है, इसलिए पीएफ सीमा पर सीमित है: नियोक्ता की ओर से ₹3,250 और आपकी ओर से ₹3,000।",
+ warnNeg:"इस ढाँचे के लिए सीटीसी बहुत कम है — फील्ड भत्ता ऋणात्मक आ रहा है। कृपया सीटीसी बढ़ाकर जाँचें।",
+ breakupTitle:"वेतन का विभाजन (मासिक)", dedTitle:"आपके वेतन से कटौतियाँ",
+ colComp:"घटक", colAmt:"राशि (₹)", colHow:"गणना कैसे होती है",
+ rA:"मूल वेतन – बेसिक (a)", rB:"मकान किराया भत्ता – HRA (b)", rC:"फील्ड भत्ता (c)", rD:"सकल वेतन – ग्रॉस (d = a + b + c)",
+ rE:"नियोक्ता का पीएफ अंशदान (e)", rF:"मेडिक्लेम प्रीमियम (f)", rG:"मासिक सीटीसी (g = d + e + f)", rH:"वार्षिक सीटीसी (g × 12)",
+ rI:"कर्मचारी का पीएफ अंशदान (i)", rJ:"व्यवसाय कर (j)", rK:"टीडीएस (k)", rL:"कुल कटौती (l = i + j + k)", rM:"मासिक नेट वेतन (m = d − l)",
+ fA:"मासिक सीटीसी (g) का 55%", fB:"मूल वेतन (a) का 50%", fC:"c = d − (a + b), संतुलन राशि", fD:"d = g − e − f",
+ fE:"मूल वेतन (a) का 13%, अधिकतम ₹3,250 (₹25,000 का 13%)", fF:"निश्चित मासिक राशि, आयु के अनुसार (औसत)", fG:"आपके द्वारा दर्ज की गई सीटीसी", fH:"g × 12",
+ fI:"मूल वेतन (a) का 12%, अधिकतम ₹3,000 (₹25,000 का 12%)", fJ:"आपके द्वारा दर्ज (शीट में ₹200)", fK:"आपके द्वारा दर्ज (लागू न हो तो 0)", fL:"l = i + j + k", fM:"m = d − l",
+ stepsTitle:"गणना चरण-दर-चरण देखें",
+ capped:"सीमित",
+ cmpTitle:"17 सितंबर 2026 को क्या बदला?", cmpSub:"वही सीटीसी, दो पीएफ सीमाएँ — आपके आँकड़ों के साथ:",
+ cmpOld:"पुरानी सीमा ₹15,000", cmpNew:"नई सीमा ₹25,000", cmpDiff:"अंतर",
+ cmpEe:"आपका पीएफ (12%)", cmpEr:"नियोक्ता का पीएफ (13%)", cmpTot:"आपके पीएफ खाते में कुल जमा", cmpNet:"मासिक नेट वेतन (हाथ में)",
+ cmpNote:"यह उदाहरण मानता है कि आपकी सीटीसी वही रहती है। नियोक्ता का पीएफ सीटीसी में से ही दिया जाता है, इसलिए अधिक पीएफ का मतलब अभी कम ग्रॉस और कम हाथ में वेतन है — लेकिन यह अंतर आपके पीएफ खाते में सेवानिवृत्ति के लिए जमा होता है।",
+ learnTitle:"नए नियमों को समझें",
+ c1t:"क्या बदला?", c1p:"भारत सरकार ने भविष्य निधि (पीएफ) की वेतन सीमा ₹15,000 से बढ़ाकर ₹25,000 प्रति माह कर दी है। यह अधिसूचना (S.O. 5109(E)) 17 सितंबर 2026 से लागू हुई — लगभग 12 वर्षों में पहला संशोधन। अब पीएफ ₹25,000 तक के मूल वेतन पर गणना किया जाता है।",
+ statOld:"पहले की सीमा", statNew:"नई सीमा",
+ c2t:"रुपयों में इसका क्या मतलब है?", c2p:"कर्मचारी का अधिकतम पीएफ ₹1,800 से बढ़कर ₹3,000 प्रति माह (₹25,000 का 12%) और नियोक्ता का अधिकतम पीएफ ₹1,950 से बढ़कर ₹3,250 (₹25,000 का 13%) हो गया है। यदि आपका बेसिक ₹25,000 या उससे अधिक है, तो अब आप इन अधिकतम सीमाओं तक पहुँचते हैं।",
+ statEe:"आपका अधिकतम पीएफ / माह", statEr:"नियोक्ता का अधिकतम पीएफ / माह",
+ c3t:"50% वेतन नियम", c3p:"चार श्रम संहिताओं (21 नवंबर 2025 से लागू) के अनुसार मूल वेतन और महँगाई भत्ता मिलाकर कुल पारिश्रमिक का कम से कम 50% होना चाहिए। इसीलिए इस ढाँचे में बेसिक सीटीसी का 55% रखा गया है, जो न्यूनतम सीमा से अधिक है।",
+ c4t:"हाथ में वेतन क्यों घटता है?", c4p:"नियोक्ता का पीएफ सीटीसी का हिस्सा है। पीएफ का आधार बढ़ने पर सीटीसी का अधिक हिस्सा पीएफ में जाता है और ग्रॉस वेतन में कम बचता है (इसलिए फील्ड भत्ता घटता है)। कुछ भी खोता नहीं है: यह पैसा आपके पीएफ खाते में जमा होता है, जो पीएफ नियमों के अनुसार सेवानिवृत्ति पर या नौकरी छोड़ने पर ब्याज सहित मिलता है।",
+ glossTitle:"हर मद का मतलब",
+ g1t:"भविष्य निधि (पीएफ)", g1p:"सेवानिवृत्ति के लिए बचत योजना। आप बेसिक का 12% (अधिकतम ₹3,000) देते हैं और इस ढाँचे में नियोक्ता 13% (अधिकतम ₹3,250) जोड़ता है। दोनों राशि आपके पीएफ खाते में जाती हैं।",
+ g2t:"व्यवसाय कर", g2p:"वेतनभोगियों पर लगने वाला राज्य का छोटा कर। राशि राज्य पर निर्भर है; शीट में ₹200 प्रति माह माना गया है।",
+ g3t:"टीडीएस", g3p:"स्रोत पर कर कटौती — यदि आपकी वार्षिक कर योग्य आय कर-मुक्त सीमा से अधिक हो तो नियोक्ता आयकर काटता है। यह आपकी कर प्रणाली और घोषणाओं पर निर्भर है, इसलिए पे-स्लिप की राशि दर्ज करें।",
+ g4t:"मेडिक्लेम", g4p:"नियोक्ता द्वारा भरा जाने वाला समूह स्वास्थ्य बीमा प्रीमियम। यह सीटीसी का हिस्सा है, पर आपको नकद नहीं मिलता।",
+ faqTitle:"अक्सर पूछे जाने वाले प्रश्न",
+ q1:"क्या अब मेरे लिए पीएफ अनिवार्य है?", a1:"जिन पात्र कर्मचारियों का पीएफ वेतन ₹25,000 प्रति माह तक है, उनके लिए पीएफ कवरेज अनिवार्य है। ₹15,000 से ₹25,000 के बीच कमाने वाले जो पहले अनिवार्य दायरे से बाहर थे, अब शामिल हो सकते हैं। अपनी सही स्थिति के लिए एचआर से पूछें।",
+ q2:"यदि मेरा बेसिक ₹25,000 से अधिक है तो?", a2:"पीएफ सीमित रहता है: आपकी ओर से ₹3,000 और नियोक्ता की ओर से ₹3,250। यह कैलकुलेटर सीमा अपने-आप लगा देता है।",
+ q3:"सितंबर 2026 का हिसाब कैसे हुआ?", a3:"कई पेरोल प्रदाताओं ने महीने को बाँटा: 1–16 सितंबर के लिए ₹15,000 और 17–30 सितंबर के लिए ₹25,000 की सीमा। इसलिए सितंबर की पे-स्लिप इस कैलकुलेटर से अलग हो सकती है; अक्टूबर से पूरे माह ₹25,000 की सीमा लागू है।",
+ q4:"फील्ड भत्ता क्यों बदलता है?", a4:"फील्ड भत्ता संतुलन राशि है: ग्रॉस − (बेसिक + HRA)। नियोक्ता का पीएफ बढ़ने पर यह संतुलन राशि घटती है।",
+ q5:"क्या मेरा आयकर बदलेगा?", a5:"संभव है। पुरानी कर प्रणाली में कर्मचारी का पीएफ कटौती के लिए पात्र हो सकता है, जबकि नई प्रणाली में कटौतियाँ सीमित हैं। अपनी वित्त/एचआर टीम या कर सलाहकार से चर्चा करें।",
+ q6:"क्या यह मेरी असली पे-स्लिप है?", a6:"नहीं — यह सितंबर'26 की वेतन-विभाजन शीट पर आधारित अनुमान है। राउंडिंग, राज्य के व्यवसाय कर स्लैब, टीडीएस और आपके मेडिक्लेम प्रीमियम के कारण असली पे-स्लिप अलग हो सकती है।",
+ disclaimer:"यह कैलकुलेटर केवल जानकारी के लिए है, कानूनी या कर सलाह नहीं। अंतिम राशि के लिए अपने एचआर/पेरोल से पुष्टि करें।",
+ sources:"स्रोत", docTitle:"वेतन कटौती कैलकुलेटर"
+},
+mr:{
+ brand:"पगार कॅल्क्युलेटर", langLabel:"भाषा", heroTag:"17 सप्टेंबर 2026 पासून लागू",
+ heroTitle:"पगार कपात कॅल्क्युलेटर",
+ heroSub:"तुमचा पगार भरा आणि नवीन ₹25,000 च्या पीएफ वेतन मर्यादेनुसार तुमचा पीएफ, कपाती आणि हातात येणारा पगार लगेच पहा.",
+ navCalc:"कॅल्क्युलेटर", navLearn:"नवीन नियम समजून घ्या", navFaq:"नेहमी विचारले जाणारे प्रश्न",
+ inputsTitle:"तुमच्या पगाराचा तपशील", enterBy:"मला माहीत आहे माझे…",
+ modeMonthly:"मासिक सीटीसी", modeAnnual:"वार्षिक सीटीसी", modeBasic:"मूळ पगार (बेसिक)",
+ lblMonthly:"मासिक सीटीसी (₹)", lblAnnual:"वार्षिक सीटीसी (₹)", lblBasic:"मासिक मूळ पगार – बेसिक (₹)",
+ hintMonthly:"कंपनीला दरमहा येणारा एकूण खर्च, ज्यामध्ये नियोक्त्याचा पीएफ आणि मेडिक्लेम समाविष्ट आहे.",
+ hintAnnual:"वर्षभराचे पॅकेज. मासिक सीटीसीसाठी याला 12 ने भागले जाते.",
+ hintBasic:"आम्ही उलट हिशोब करतो: बेसिक हे सीटीसीच्या 55% आहे, म्हणून सीटीसी = बेसिक ÷ 55%.",
+ quick:"उदाहरणे वापरून पहा",
+ medLbl:"मेडिक्लेम प्रीमियम (₹ / महिना)", medHint:"सरासरी प्रीमियम, जो नियोक्ता भरतो आणि सीटीसीमध्ये समाविष्ट आहे.",
+ ptLbl:"व्यवसाय कर (₹ / महिना)", ptHint:"राज्यानुसार वेगळा; शीटमध्ये ₹200 गृहीत धरला आहे.",
+ tdsLbl:"टीडीएस, लागू असल्यास (₹ / महिना)", tdsHint:"स्रोतावर कापलेला आयकर. नसल्यास 0 लिहा.",
+ reset:"रीसेट", print:"प्रिंट / PDF जतन करा",
+ netTitle:"तुमचा मासिक हातात येणारा पगार", perYear:"दरवर्षी", ctcIs:"मासिक सीटीसी",
+ pctOfCtc:"तुमच्या सीटीसीपैकी {p}% तुमच्या बँक खात्यात जमा होतात",
+ splitTitle:"तुमची सीटीसी कुठे जाते?",
+ lgNet:"हातात येणारा पगार", lgEe:"तुमचा पीएफ", lgPt:"व्यवसाय कर", lgTds:"टीडीएस", lgEr:"नियोक्त्याचा पीएफ", lgMed:"मेडिक्लेम",
+ pfBelow:"तुमचे बेसिक (₹{b}) ₹25,000 च्या मर्यादेपेक्षा कमी आहे, म्हणून पीएफ तुमच्या प्रत्यक्ष बेसिकच्या 13% (नियोक्ता) आणि 12% (तुम्ही) आहे.",
+ pfAbove:"तुमचे बेसिक (₹{b}) ₹25,000 किंवा त्याहून अधिक आहे, म्हणून पीएफ मर्यादित आहे: नियोक्त्याकडून ₹3,250 आणि तुमच्याकडून ₹3,000.",
+ warnNeg:"या रचनेसाठी सीटीसी खूपच कमी आहे — फील्ड भत्ता ऋण येत आहे. कृपया सीटीसी वाढवून पहा.",
+ breakupTitle:"पगाराची विभागणी (मासिक)", dedTitle:"तुमच्या पगारातील कपाती",
+ colComp:"घटक", colAmt:"रक्कम (₹)", colHow:"गणना कशी होते",
+ rA:"मूळ पगार – बेसिक (a)", rB:"घरभाडे भत्ता – HRA (b)", rC:"फील्ड भत्ता (c)", rD:"एकूण पगार – ग्रॉस (d = a + b + c)",
+ rE:"नियोक्त्याचे पीएफ योगदान (e)", rF:"मेडिक्लेम प्रीमियम (f)", rG:"मासिक सीटीसी (g = d + e + f)", rH:"वार्षिक सीटीसी (g × 12)",
+ rI:"कर्मचाऱ्याचे पीएफ योगदान (i)", rJ:"व्यवसाय कर (j)", rK:"टीडीएस (k)", rL:"एकूण कपात (l = i + j + k)", rM:"मासिक निव्वळ पगार (m = d − l)",
+ fA:"मासिक सीटीसी (g) च्या 55%", fB:"मूळ पगार (a) च्या 50%", fC:"c = d − (a + b), समतोल रक्कम", fD:"d = g − e − f",
+ fE:"मूळ पगार (a) च्या 13%, कमाल ₹3,250 (₹25,000 च्या 13%)", fF:"निश्चित मासिक रक्कम, वयानुसार (सरासरी)", fG:"तुम्ही भरलेली सीटीसी", fH:"g × 12",
+ fI:"मूळ पगार (a) च्या 12%, कमाल ₹3,000 (₹25,000 च्या 12%)", fJ:"तुम्ही भरलेला (शीटमध्ये ₹200)", fK:"तुम्ही भरलेला (लागू नसल्यास 0)", fL:"l = i + j + k", fM:"m = d − l",
+ stepsTitle:"गणना टप्प्याटप्प्याने पहा",
+ capped:"मर्यादित",
+ cmpTitle:"17 सप्टेंबर 2026 रोजी काय बदलले?", cmpSub:"तीच सीटीसी, दोन पीएफ मर्यादा — तुमच्या आकडेवारीसह:",
+ cmpOld:"जुनी मर्यादा ₹15,000", cmpNew:"नवीन मर्यादा ₹25,000", cmpDiff:"फरक",
+ cmpEe:"तुमचा पीएफ (12%)", cmpEr:"नियोक्त्याचा पीएफ (13%)", cmpTot:"तुमच्या पीएफ खात्यात एकूण जमा", cmpNet:"मासिक निव्वळ पगार (हातात)",
+ cmpNote:"हे उदाहरण तुमची सीटीसी तीच राहते असे गृहीत धरते. नियोक्त्याचा पीएफ सीटीसीमधूनच दिला जातो, त्यामुळे जास्त पीएफ म्हणजे आता कमी ग्रॉस आणि कमी हातातील पगार — पण हा फरक निवृत्तीसाठी तुमच्या पीएफ खात्यात जमा होतो.",
+ learnTitle:"नवीन नियम समजून घ्या",
+ c1t:"काय बदलले?", c1p:"भारत सरकारने भविष्य निर्वाह निधी (पीएफ) साठीची वेतन मर्यादा ₹15,000 वरून ₹25,000 प्रति महिना केली आहे. ही अधिसूचना (S.O. 5109(E)) 17 सप्टेंबर 2026 पासून लागू झाली — सुमारे 12 वर्षांतील पहिली सुधारणा. आता पीएफ ₹25,000 पर्यंतच्या मूळ पगारावर मोजला जातो.",
+ statOld:"आधीची मर्यादा", statNew:"नवीन मर्यादा",
+ c2t:"रुपयांमध्ये याचा अर्थ काय?", c2p:"कर्मचाऱ्याचा कमाल पीएफ ₹1,800 वरून ₹3,000 प्रति महिना (₹25,000 च्या 12%) आणि नियोक्त्याचा कमाल पीएफ ₹1,950 वरून ₹3,250 (₹25,000 च्या 13%) झाला आहे. तुमचे बेसिक ₹25,000 किंवा अधिक असल्यास तुम्ही आता या कमाल मर्यादेपर्यंत पोहोचता.",
+ statEe:"तुमचा कमाल पीएफ / महिना", statEr:"नियोक्त्याचा कमाल पीएफ / महिना",
+ c3t:"50% वेतन नियम", c3p:"चार कामगार संहितांनुसार (21 नोव्हेंबर 2025 पासून लागू) मूळ वेतन आणि महागाई भत्ता मिळून एकूण मोबदल्याच्या किमान 50% असावा. म्हणूनच या रचनेत बेसिक सीटीसीच्या 55% ठेवले आहे, जे किमान मर्यादेपेक्षा जास्त आहे.",
+ c4t:"हातातील पगार का कमी होतो?", c4p:"नियोक्त्याचा पीएफ सीटीसीचा भाग आहे. पीएफचा आधार वाढला की सीटीसीचा जास्त भाग पीएफमध्ये जातो आणि ग्रॉस पगारात कमी उरतो (त्यामुळे फील्ड भत्ता कमी होतो). काहीही वाया जात नाही: हा पैसा तुमच्या पीएफ खात्यात जमा होतो, जो पीएफ नियमांनुसार निवृत्तीवर किंवा नोकरी सोडताना व्याजासह मिळतो.",
+ glossTitle:"प्रत्येक बाबीचा अर्थ",
+ g1t:"भविष्य निर्वाह निधी (पीएफ)", g1p:"निवृत्तीसाठी बचत योजना. तुम्ही बेसिकच्या 12% (कमाल ₹3,000) भरता आणि या रचनेत नियोक्ता 13% (कमाल ₹3,250) भर घालतो. दोन्ही रक्कम तुमच्या पीएफ खात्यात जातात.",
+ g2t:"व्यवसाय कर", g2p:"पगारदारांवर आकारला जाणारा राज्याचा छोटा कर. रक्कम राज्यानुसार ठरते; शीटमध्ये दरमहा ₹200 गृहीत धरले आहेत.",
+ g3t:"टीडीएस", g3p:"स्रोतावर कर कपात — तुमचे वार्षिक करपात्र उत्पन्न करमुक्त मर्यादेपेक्षा जास्त असल्यास नियोक्ता आयकर कापतो. हे तुमची कर प्रणाली आणि घोषणांवर अवलंबून असते, म्हणून पे-स्लिपमधील रक्कम भरा.",
+ g4t:"मेडिक्लेम", g4p:"नियोक्त्याने भरलेला समूह आरोग्य विमा प्रीमियम. तो सीटीसीचा भाग आहे, पण तुम्हाला रोख मिळत नाही.",
+ faqTitle:"नेहमी विचारले जाणारे प्रश्न",
+ q1:"आता माझ्यासाठी पीएफ अनिवार्य आहे का?", a1:"ज्या पात्र कर्मचाऱ्यांचे पीएफ वेतन दरमहा ₹25,000 पर्यंत आहे त्यांच्यासाठी पीएफ संरक्षण अनिवार्य आहे. ₹15,000 ते ₹25,000 कमावणारे जे आधी अनिवार्य कक्षेबाहेर होते, ते आता समाविष्ट होऊ शकतात. तुमच्या नेमक्या स्थितीसाठी एचआरकडे चौकशी करा.",
+ q2:"माझे बेसिक ₹25,000 पेक्षा जास्त असल्यास?", a2:"पीएफ मर्यादित राहतो: तुमच्याकडून ₹3,000 आणि नियोक्त्याकडून ₹3,250. हे कॅल्क्युलेटर मर्यादा आपोआप लागू करते.",
+ q3:"सप्टेंबर 2026 चा हिशोब कसा झाला?", a3:"अनेक पेरोल प्रदात्यांनी महिना विभागला: 1–16 सप्टेंबरसाठी ₹15,000 आणि 17–30 सप्टेंबरसाठी ₹25,000 मर्यादा. त्यामुळे सप्टेंबरची पे-स्लिप या कॅल्क्युलेटरपेक्षा वेगळी असू शकते; ऑक्टोबरपासून पूर्ण महिन्यासाठी ₹25,000 मर्यादा लागू आहे.",
+ q4:"फील्ड भत्ता का बदलतो?", a4:"फील्ड भत्ता ही समतोल रक्कम आहे: ग्रॉस − (बेसिक + HRA). नियोक्त्याचा पीएफ वाढला की ही समतोल रक्कम कमी होते.",
+ q5:"माझा आयकर बदलेल का?", a5:"शक्यता आहे. जुन्या कर प्रणालीत कर्मचाऱ्याचा पीएफ वजावटीसाठी पात्र असू शकतो, तर नवीन प्रणालीत वजावटी मर्यादित आहेत. तुमच्या वित्त/एचआर टीमशी किंवा कर सल्लागाराशी चर्चा करा.",
+ q6:"ही माझी खरी पे-स्लिप आहे का?", a6:"नाही — हा सप्टेंबर'26 च्या पगार-विभागणी शीटवर आधारित अंदाज आहे. राउंडिंग, राज्याचे व्यवसाय कर स्लॅब, टीडीएस आणि तुमचा मेडिक्लेम प्रीमियम यामुळे खरी पे-स्लिप वेगळी असू शकते.",
+ disclaimer:"हे कॅल्क्युलेटर फक्त माहितीसाठी आहे, कायदेशीर किंवा कर सल्ला नाही. अंतिम रकमेसाठी तुमच्या एचआर/पेरोलकडून खात्री करा.",
+ sources:"स्रोत", docTitle:"पगार कपात कॅल्क्युलेटर"
+}};
+
+/* ============ CALCULATION (mirrors the Excel sheet) ============ */
+const DEFAULTS = {mode:"monthly", ctc:60000, med:956, pt:200, tds:0};
+const r2 = x => { const v = Math.round((x + Number.EPSILON) * 100) / 100; return v === 0 ? 0 : v; };
+
+/* ceil = PF wage ceiling (25000 new, 15000 old)
+   D8  Basic            = D14*55%
+   D9  HRA              = D8/2
+   D12 Employer PF      = IF(D8<ceil, D8*13%, ceil*13%)   (sheet: 3,250 at ceil 25,000)
+   D11 Gross            = D14-D12-D13
+   D10 Field allowance  = D11-D8-D9
+   D18 Employee PF      = IF(D8<ceil, D8*12%, ceil*12%)   (sheet: 3,000 at ceil 25,000)
+   D21 Total deductions = D18+D19+D20
+   D22 Net pay          = D11-D21 */
+function calc(ctc, med, pt, tds, ceil){
+  const basic = ctc * 55 / 100;
+  const hra   = basic / 2;
+  const er    = basic < ceil ? basic * 13 / 100 : ceil * 13 / 100;
+  const gross = ctc - er - med;
+  const field = gross - basic - hra;
+  const ee    = basic < ceil ? basic * 12 / 100 : ceil * 12 / 100;
+  const ded   = ee + pt + tds;
+  const net   = gross - ded;
+  return {ctc, basic, hra, er, med, gross, field, ee, pt, tds, ded, net, annual: ctc * 12, capped: basic >= ceil};
+}
+
+/* ============ STATE & HELPERS ============ */
+let lang = "en";
+const S = Object.assign({}, DEFAULTS);
+const $ = id => document.getElementById(id);
+const t = k => (T[lang][k] !== undefined ? T[lang][k] : T.en[k]);
+const nf = new Intl.NumberFormat("en-IN", {maximumFractionDigits: 2});
+const money = n => { n = r2(n); return (n < 0 ? "−₹" : "₹") + nf.format(Math.abs(n)); };
+const plain = n => nf.format(r2(n));
+const parseNum = s => { s = String(s).replace(/[^0-9.]/g, ""); const p = s.split("."); if (p.length > 2) s = p[0] + "." + p.slice(1).join(""); const v = parseFloat(s); return isFinite(v) ? Math.min(v, 999999999) : 0; };
+
+function displayValueForMode(){
+  if (S.mode === "annual") return S.ctc * 12;
+  if (S.mode === "basic") return S.ctc * 55 / 100;
+  return S.ctc;
+}
+function ctcFromInput(v){
+  if (S.mode === "annual") return v / 12;
+  if (S.mode === "basic") return Math.round(v * 100 / 55 * 1e6) / 1e6;
+  return v;
+}
+
+/* ============ RENDER ============ */
+function render(){
+  const r = calc(S.ctc, S.med, S.pt, S.tds, 25000);
+  const old = calc(S.ctc, S.med, S.pt, S.tds, 15000);
+
+  // headline
+  $("netAmt").textContent = money(r.net);
+  $("netYear").textContent = money(r.net * 12) + " " + t("perYear");
+  $("netCtc").textContent = t("ctcIs") + ": " + money(r.ctc);
+  const pct = r.ctc > 0 ? Math.round(r.net / r.ctc * 1000) / 10 : 0;
+  $("netPct").textContent = t("pctOfCtc").replace("{p}", pct);
+
+  // warning
+  const neg = r.field < 0 && r.ctc > 0;
+  $("warnCard").hidden = !neg;
+  $("warnMsg").textContent = neg ? "⚠ " + t("warnNeg") : "";
+
+  // split bar
+  const segs = [
+    ["lgNet", r.net, "--c-net"], ["lgEe", r.ee, "--c-ee"], ["lgPt", r.pt, "--c-pt"],
+    ["lgTds", r.tds, "--c-tds"], ["lgEr", r.er, "--c-er"], ["lgMed", r.med, "--c-med"]
+  ];
+  $("bar").innerHTML = segs.map(s => {
+    const w = r.ctc > 0 ? Math.max(0, s[1] / r.ctc * 100) : 0;
+    return `<i style="width:${w}%;background:var(${s[2]})" title="${t(s[0])}"></i>`;
+  }).join("");
+  $("bar").setAttribute("aria-label", t("splitTitle"));
+  $("legend").innerHTML = segs.map(s => {
+    const p = r.ctc > 0 ? (s[1] / r.ctc * 100).toFixed(1) : "0.0";
+    return `<div><s style="background:var(${s[2]})"></s><span>${t(s[0])}</span><em>${money(s[1])}</em><small>${p}%</small></div>`;
+  }).join("");
+  $("pfNote").textContent = (r.capped ? t("pfAbove") : t("pfBelow")).replace("{b}", plain(r.basic));
+
+  // break-up table
+  const row = (k, v, cls, f) => `<tr class="${cls||""}"><td>${t("r"+k)}</td><td class="n ${v<0?"neg":""}">${money(v)}</td><td class="f">${t(f||("f"+k))}</td></tr>`;
+  $("tbBreak").innerHTML =
+    row("A", r.basic) + row("B", r.hra) + row("C", r.field) + row("D", r.gross, "total") +
+    row("E", r.er) + row("F", r.med) + row("G", r.ctc, "total") + row("H", r.annual);
+  $("tbDed").innerHTML =
+    row("I", r.ee) + row("J", r.pt) + row("K", r.tds) + row("L", r.ded, "total") + row("M", r.net, "hl");
+
+  // steps
+  const m = plain;
+  const st = [
+    ["rA", `55% × ${m(r.ctc)} = ${m(r.basic)}`],
+    ["rB", `${m(r.basic)} ÷ 2 = ${m(r.hra)}`],
+    ["rE", r.capped ? `${m(r.basic)} ≥ 25,000 → ${t("capped")}: 3,250` : `13% × ${m(r.basic)} = ${m(r.er)}`],
+    ["rD", `${m(r.ctc)} − ${m(r.er)} − ${m(r.med)} = ${m(r.gross)}`],
+    ["rC", `${m(r.gross)} − ${m(r.basic)} − ${m(r.hra)} = ${m(r.field)}`],
+    ["rI", r.capped ? `${m(r.basic)} ≥ 25,000 → ${t("capped")}: 3,000` : `12% × ${m(r.basic)} = ${m(r.ee)}`],
+    ["rL", `${m(r.ee)} + ${m(r.pt)} + ${m(r.tds)} = ${m(r.ded)}`],
+    ["rM", `${m(r.gross)} − ${m(r.ded)} = ${m(r.net)}`]
+  ];
+  $("steps").innerHTML = st.map((s, i) => `<li><span>${i+1}. ${t(s[0])}</span><code>${s[1]}</code></li>`).join("");
+
+  // comparison
+  const cr = (label, a, b, bold) => {
+    const d = b - a;
+    const cls = Math.abs(d) < 0.005 ? "" : ((d > 0) !== !!bold ? "up" : "down");
+    return `<tr class="${bold?"total":""}"><td>${label}</td><td class="n">${money(a)}</td><td class="n">${money(b)}</td><td class="n ${cls}">${d>0?"+":""}${Math.abs(d)<0.005?"₹0":money(d)}</td></tr>`;
+  };
+  // for net pay a rise is good (green), so flip colours for that row
+  const netRow = (() => {
+    const d = r.net - old.net; const cls = Math.abs(d) < 0.005 ? "" : (d > 0 ? "down" : "up");
+    return `<tr class="total"><td>${t("cmpNet")}</td><td class="n">${money(old.net)}</td><td class="n">${money(r.net)}</td><td class="n ${cls}">${d>0?"+":""}${Math.abs(d)<0.005?"₹0":money(d)}</td></tr>`;
+  })();
+  $("tbCmp").innerHTML =
+    cr(t("cmpEe"), old.ee, r.ee) + cr(t("cmpEr"), old.er, r.er) +
+    cr(t("cmpTot"), old.ee + old.er, r.ee + r.er, true) + netRow;
+}
+
+function applyLang(){
+  const D = T[lang];
+  document.documentElement.lang = lang;
+  document.title = D.docTitle;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+  const key = S.mode === "annual" ? "Annual" : S.mode === "basic" ? "Basic" : "Monthly";
+  $("mainLbl").textContent = t("lbl" + key);
+  $("mainHint").textContent = t("hint" + key);
+  render();
+}
+
+/* ============ INPUT WIRING ============ */
+function wireMoney(el, onValue){
+  el.addEventListener("input", () => {
+    const cleaned = el.value.replace(/[^0-9.,]/g, "");
+    if (cleaned !== el.value) el.value = cleaned;
+    onValue(parseNum(el.value));
+  });
+  el.addEventListener("focus", () => { el.value = el.value.replace(/,/g, ""); el.select(); });
+  el.addEventListener("blur", () => { el.value = plain(parseNum(el.value)); });
+}
+function setInputs(){
+  $("mainIn").value = plain(displayValueForMode());
+  $("medIn").value = plain(S.med);
+  $("ptIn").value = plain(S.pt);
+  $("tdsIn").value = plain(S.tds);
+}
+wireMoney($("mainIn"), v => { S.ctc = ctcFromInput(v); render(); });
+wireMoney($("medIn"),  v => { S.med = v; render(); });
+wireMoney($("ptIn"),   v => { S.pt = v; render(); });
+wireMoney($("tdsIn"),  v => { S.tds = v; render(); });
+
+document.querySelectorAll(".modes button").forEach(b => b.addEventListener("click", () => {
+  S.mode = b.dataset.mode;
+  document.querySelectorAll(".modes button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  setInputs(); applyLang();
+}));
+document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => { lang = b.dataset.lang; applyLang(); }));
+
+// example chips
+[30000, 45000, 60000, 100000].forEach(v => {
+  const c = document.createElement("button");
+  c.type = "button"; c.className = "chip"; c.textContent = "₹" + nf.format(v) + (lang ? "" : "");
+  c.addEventListener("click", () => {
+    S.mode = "monthly"; S.ctc = v;
+    document.querySelectorAll(".modes button").forEach(x => x.setAttribute("aria-pressed", x.dataset.mode === "monthly"));
+    setInputs(); applyLang();
+  });
+  $("chips").appendChild(c);
+});
+
+$("resetBtn").addEventListener("click", () => {
+  Object.assign(S, DEFAULTS);
+  document.querySelectorAll(".modes button").forEach(x => x.setAttribute("aria-pressed", x.dataset.mode === "monthly"));
+  setInputs(); applyLang();
+});
+$("printBtn").addEventListener("click", () => window.print());
+
+// expose for testing
+window.__calc = calc;
+
+setInputs();
+applyLang();
+</script>
+</body>
+</html>
